@@ -4,6 +4,9 @@
 #include "FormFactorData.h"
 #include "LatticePlane.h"
 #include "AbsorbCoeffData.h"
+#include <map>
+#include "FileReading.h"
+#include "ccd.h"
 using namespace std;
 
 
@@ -62,6 +65,10 @@ bool isSetInList( hklSet Set, std::vector<hklSet> *List)
 int main ()
 {
 
+////////////////////////////////////////////////////////////////////////////////
+//          Generate Diffraction Probabilities
+////////////////////////////////////////////////////////////////////////////////
+    
     FormFactorData TaFormFactor( 0.0f, 2.0f, 10000);
     TaFormFactor.LoadData("TaFormFactor.txt");
 
@@ -226,7 +233,127 @@ int main ()
     BraggAngleFile.close();
     ScatterProbFile.close();
     RockingCurveFile.close();
+    
+////////////////////////////////////////////////////////////////////////////////
+//          Comput Min/Max Bragg Angles
+////////////////////////////////////////////////////////////////////////////////
 
-
+    ifstream datafile("InputScript.txt");
+    std::map<std::string,std::string> InputData;
+    AddToMapFromFile(datafile, InputData);
+    datafile.close();
+    
+    Vector InputCCDOrigin(110,-1,50); //origin of CCD
+    Vector InputCCDNormal(0,0,1); //direction that CCD points in.
+    double InputCCDAngle = 0;
+    
+    double InputCCDXMin = 0.0;
+    double InputCCDXMax = 5.0;
+    
+    double InputCCDYMin = 0.0;
+    double InputCCDYMax = 2.0;
+    
+    VectorFromMap("CCDOrigin",InputData,InputCCDOrigin);
+    VectorFromMap("CCDNormal",InputData,InputCCDNormal);
+    DoubleFromMap("CCDAngle", InputData,InputCCDAngle);
+    DoubleFromMap("CCDXMin", InputData, InputCCDXMin);
+    DoubleFromMap("CCDYMin", InputData, InputCCDYMin);
+    DoubleFromMap("CCDXMax", InputData, InputCCDXMax);
+    DoubleFromMap("CCDYMax", InputData, InputCCDYMax);
+    
+    cout << "CCDOrigin:\t"; InputCCDOrigin.Print();
+    cout << "CCDNormal:\t"; InputCCDNormal.Print();
+    
+    double XPixelWidth = 0.05, YPixelWidth = 0.05;
+    CCD CCDCamera(InputCCDOrigin, InputCCDNormal, InputCCDAngle,
+                  XPixelWidth, YPixelWidth,
+                  InputCCDXMin, InputCCDXMax,
+                  InputCCDYMin, InputCCDYMax);
+    
+    Vector CCDCorners[4];
+    
+    CCDCamera.GenerateCCDCorners( CCDCorners[0], CCDCorners[1], CCDCorners[2], CCDCorners[3]);
+    
+    double CCDXMin = CCDCorners[0].x, CCDXMax = CCDCorners[0].x, CCDYMin = CCDCorners[0].y, CCDYMax = CCDCorners[0].y;
+    
+    cout << "CCDBounds:" << endl;    
+    for(int i = 0; i<4; i++)
+    {
+        cout << i << ":\t"; CCDCorners[i].Print();
+        if(CCDCorners[i].x < CCDXMin)
+        {
+            CCDXMin = CCDCorners[i].x;
+        }
+        if(CCDCorners[i].y < CCDYMin)
+        {
+            CCDYMin = CCDCorners[i].y;
+        }
+        if(CCDCorners[i].x > CCDXMax)
+        {
+            CCDXMax = CCDCorners[i].x;
+        }
+        if(CCDCorners[i].y > CCDYMax)
+        {
+            CCDYMax = CCDCorners[i].y;
+        }
+        
+    }
+    
+    Vector CrystalOrigin(0,-0.1,0);
+    double CrystalXLength = 0.1;
+    double CrystalYLength = 0.2;
+    
+    VectorFromMap("CrystalOrigin",InputData, CrystalOrigin);
+    DoubleFromMap("CrystalXLength", InputData, CrystalXLength);
+    DoubleFromMap("CrystalYLength", InputData, CrystalYLength);
+    
+    cout << "CrystalOrigin:\t"; CrystalOrigin.Print();
+    cout << "CrystalDimensions:\tX:\t" << CrystalXLength << "\tY:\t" << CrystalYLength << endl;
+    
+    Vector CrystalCorners[4];
+    
+    CrystalCorners[0] = Vector(CrystalOrigin);
+    CrystalCorners[1] = Vector(0,CrystalOrigin.y+CrystalYLength,0);
+    CrystalCorners[2] = Vector(CrystalOrigin.x+CrystalXLength,CrystalOrigin.y,0);
+    CrystalCorners[3] = Vector(CrystalOrigin.x+CrystalXLength,CrystalOrigin.y+CrystalYLength,0);
+    
+    cout << "Crystal Corners:" << endl;
+    for(int i = 0; i<4; i++)
+    {
+        CrystalCorners[i].Print();
+    }
+    
+    Vector Source( -3.0f, 0.0f, 5.0);    
+    VectorFromMap("Source", InputData, Source);
+    
+    double MinBraggAngle = 10;
+    double MaxBraggAngle = -1;
+    
+    //TODO: loop across crystal edges AND CCD edges
+    
+    for(int iCrystalCorner = 0; iCrystalCorner < 4; iCrystalCorner++)
+    {
+        Vector SourceToCrystal = CrystalCorners[iCrystalCorner] - Source;
+        SourceToCrystal = SourceToCrystal.Normalized();
+        for(int iCCDCorner = 0; iCCDCorner < 4; iCCDCorner ++)
+        {
+            Vector CrystalToCCD = CCDCorners[iCCDCorner] - CrystalCorners[iCrystalCorner];
+            CrystalToCCD = CrystalToCCD.Normalized();
+            double BraggAngle = 0.5*acos( CrystalToCCD.Dot(SourceToCrystal));
+            if( BraggAngle < MinBraggAngle )
+            {
+                MinBraggAngle = BraggAngle;
+            }
+            if( BraggAngle > MaxBraggAngle )
+            {
+                MaxBraggAngle = BraggAngle;
+            }
+        }
+    }
+    
+    cout << "MinAngle:\t" << MinBraggAngle << "\tMaxAngle:\t" << MaxBraggAngle << endl;
+    
+    
     return 0;
+
 }

@@ -156,7 +156,7 @@
 		6C12027316DF653E00690295 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -183,14 +183,14 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = /Users/shamim/Documents/Code/Include;
+				USER_HEADER_SEARCH_PATHS = "/Users/shamim/Documents/Code/Include /Users/shamim/Documents/Code/boost_1_53_0";
 			};
 			name = Debug;
 		};
 		6C12027416DF653E00690295 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -210,7 +210,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = /Users/shamim/Documents/Code/Include;
+				USER_HEADER_SEARCH_PATHS = "/Users/shamim/Documents/Code/Include /Users/shamim/Documents/Code/boost_1_53_0";
 			};
 			name = Release;
 		};
