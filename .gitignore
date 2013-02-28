@@ -164,4 +164,9 @@ pip-log.txt
 
 #random stuff
 ProcessedScatteringData.txt
+RockingCurve.txt
+ScatterProb.txt
+BraggAngle.txt
+TaAbsorbCoeff.txt
+TaFormFactor.txt
 *.pdf
