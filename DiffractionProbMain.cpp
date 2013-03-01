@@ -64,16 +64,26 @@ bool isSetInList( hklSet Set, std::vector<hklSet> *List)
 
 int main ()
 {
-
+    
+    ifstream datafile("InputScript.txt");
+    std::map<std::string,std::string> InputData;
+    AddToMapFromFile(datafile, InputData);
+    datafile.close();
 ////////////////////////////////////////////////////////////////////////////////
 //          Generate Diffraction Probabilities
 ////////////////////////////////////////////////////////////////////////////////
     
-    FormFactorData TaFormFactor( 0.0f, 2.0f, 10000);
-    TaFormFactor.LoadData("TaFormFactor.txt");
+    FormFactorData FormFactor( 0.0f, 2.0f, 10000);
+    std::string FormFacFilename;
+    StringFromMap("FormFactorData", InputData, FormFacFilename);
+    //FormFactor.LoadData("TaFormFactor.txt");
+    FormFactor.LoadData(FormFacFilename.c_str());
 
-    AbsorbCoeffData TaMuData( 1.0f, 15.0f, 2000);
-    TaMuData.LoadData("TaAbsorbCoeff.txt");
+    AbsorbCoeffData MuData( 1.0f, 15.0f, 2000);
+    std::string MuDataFilename;
+    StringFromMap("AbsorptionData", InputData, MuDataFilename);
+    //MuData.LoadData("TaAbsorbCoeff.txt");
+    MuData.LoadData(MuDataFilename.c_str());
 
     float a0 = 3.31f; //lattice constant 2.87 angstroms (iron) 3.31 (Ta)
 
@@ -93,7 +103,7 @@ int main ()
 
     cout << "UnitCellVol:\t" << UnitCellVol << endl;
 
-    LatticePlane Plane( b1, b2, b3, 0, 1, 1, &TaFormFactor, UnitCellVol, &TaMuData, 12);
+    LatticePlane Plane( b1, b2, b3, 0, 1, 1, &FormFactor, UnitCellVol, &MuData, 12);
 
     //float Lambda = 3.0f;
 
@@ -216,7 +226,8 @@ int main ()
 
         for( int i=0; i<int(hklPlanes.size()); i++)
         {
-            LatticePlane Plane( b1, b2, b3, hklPlanes[i].h,  hklPlanes[i].k,  hklPlanes[i].l, &TaFormFactor, UnitCellVol, &TaMuData, hklPlanes[i].M);
+            LatticePlane Plane( b1, b2, b3, hklPlanes[i].h,  hklPlanes[i].k,  hklPlanes[i].l, &FormFactor, UnitCellVol,
+                               &MuData, hklPlanes[i].M);
             BraggAngleFile << Plane.FindBraggReflectionAngle( EnergyToWavelength(Energy) ) << "\t";
             float I = Plane.CalculatePowderScatter( EnergyToWavelength(Energy) );
             Sum += I;
@@ -237,11 +248,6 @@ int main ()
 ////////////////////////////////////////////////////////////////////////////////
 //          Comput Min/Max Bragg Angles
 ////////////////////////////////////////////////////////////////////////////////
-
-    ifstream datafile("InputScript.txt");
-    std::map<std::string,std::string> InputData;
-    AddToMapFromFile(datafile, InputData);
-    datafile.close();
     
     Vector InputCCDOrigin(110,-1,50); //origin of CCD
     Vector InputCCDNormal(0,0,1); //direction that CCD points in.
@@ -329,7 +335,8 @@ int main ()
     double MinBraggAngle = 10;
     double MaxBraggAngle = -1;
     
-    //TODO: loop across crystal edges AND CCD edges
+    //TODO: loop across crystal edges AND CCD edges??
+    //adding in a 2% error should handle that? (now done via input script)
     
     for(int iCrystalCorner = 0; iCrystalCorner < 4; iCrystalCorner++)
     {
@@ -339,7 +346,7 @@ int main ()
         {
             Vector CrystalToCCD = CCDCorners[iCCDCorner] - CrystalCorners[iCrystalCorner];
             CrystalToCCD = CrystalToCCD.Normalized();
-            double BraggAngle = 0.5*acos( CrystalToCCD.Dot(SourceToCrystal));
+            double BraggAngle = 0.5*acos( CrystalToCCD.Dot(SourceToCrystal));//0.5 as the calculation gives scattering angle;
             if( BraggAngle < MinBraggAngle )
             {
                 MinBraggAngle = BraggAngle;
@@ -351,8 +358,32 @@ int main ()
         }
     }
     
+    if(MinBraggAngle > 0.5*PI || MinBraggAngle < 0.0||
+       MaxBraggAngle > 0.5*PI || MaxBraggAngle < 0.0)
+    {
+        cout << "Error: Calculated Bragg angles out of bounds!" << endl;
+        exit(1);
+    }
+    
+    double BraggAngleTolerance = 0.01;    
+    DoubleFromMap("BraggAngleTolerance", InputData, BraggAngleTolerance);
+    
+    //This may push the angle limits out of [0,pi/2] but we don't really care if this happens since they're used to
+    //optimise the scattering probability data. It is checked above since there must be something wrong for the
+    //calculation to produce something out of the [0,pi/2] interval.
+    MinBraggAngle -= MinBraggAngle*BraggAngleTolerance;
+    MaxBraggAngle += MaxBraggAngle*BraggAngleTolerance;
+    
     cout << "MinAngle:\t" << MinBraggAngle << "\tMaxAngle:\t" << MaxBraggAngle << endl;
     
+    ofstream BraggAngleLimitsFile;
+    BraggAngleLimitsFile.open( "BraggAngleLimits.txt" );
+    
+    //keep the first part as one word!
+    BraggAngleLimitsFile << "MinimumBraggAngle:\t" << MinBraggAngle << endl;
+    BraggAngleLimitsFile << "MaximumBraggAngle:\t" << MaxBraggAngle << endl;
+    
+    BraggAngleLimitsFile.close();
     
     return 0;
 

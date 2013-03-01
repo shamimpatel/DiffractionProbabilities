@@ -10,6 +10,12 @@ Processes the data from DiffractionProb.
 MinAngle = 0.717;
 MaxAngle = 0.73;
 
+AngleLimitData = [line.split('\t') for line in open('BraggAngleLimits.txt')];
+
+MinAngle = float(AngleLimitData[0][1]);
+MaxAngle = float(AngleLimitData[1][1]);
+
+print "Angle Ranges:\t", MinAngle, "-->\t", MaxAngle
 
 AngleData = [line.split('\t') for line in open('BraggAngle.txt')];
 for l in AngleData:
@@ -56,7 +62,6 @@ for i in range( len(AngleData[0])-1, 0, -1 ):
 
 Output = open("ProcessedScatteringData.txt" ,'w');
 
-#Output.write( str(len(RemainingPlanes)) + "\t" );
 Output.write( "Energy\t" );
 
 for PlaneName in RemainingPlanes:
@@ -68,12 +73,12 @@ Output.write("Sum\n");
 for angleline, probline, rockingcurveline in zip(AngleData[1:],ProbData[1:],RockingCurveData[1:]):
     Output.write(angleline[0] + "\t"); #print energy for this row
     ProbSum = 0.0;
-    for prob in probline[1:]:
-        #if MaxAngle > float(angle) > MinAngle: Include all reflections in the sum?
-        ProbSum += float(prob); #sum up all probabilities across row
+    for prob,angle in zip(probline[1:],angleline[1:]):
+        if MaxAngle > float(angle) > MinAngle: #Only include reflections that we care about
+            ProbSum += float(prob); #sum up all probabilities across row
             
     for angle,prob,rockingcurve,i in zip(angleline[1:],probline[1:],rockingcurveline[1:],range(len(probline[1:]))):
-        if( KeepPlane[i] ): #only print this line if we're keeping this plane            
+        if( KeepPlane[i] ): #only print this column if we're keeping this plane            
             if( ProbSum != 0.0 and MaxAngle > float(angle) > MinAngle ):
                 #avoid divide by zero error and also make probability zero if we don't care about the angle
                 Output.write( angle + "\t" + str(float(prob)/ProbSum) + "\t" + rockingcurve + "\t");
