@@ -51,14 +51,6 @@ for bShouldKeep,PlaneName in zip(KeepPlane,AngleData[0][1:] ):
 print "Remaining Planes:", RemainingPlanes;
 print KeepPlane;
 
-''' 
-for i in range( len(AngleData[0])-1, 0, -1 ):
-    print i, AngleData[0][i], KeepPlane[i-1];
-    if( KeepPlane[i-1] == False):
-        for line1, line2 in zip(AngleData,ProbData):
-            del line1[i];
-            del line2[i];
-'''        
 
 Output = open("ProcessedScatteringData.txt" ,'w');
 
@@ -69,7 +61,7 @@ for PlaneName in RemainingPlanes:
 
 Output.write("Sum\n");
 
-
+#Go down by rows (scan in energy) followed by columns (lattice planes)
 for angleline, probline, rockingcurveline in zip(AngleData[1:],ProbData[1:],RockingCurveData[1:]):
     Output.write(angleline[0] + "\t"); #print energy for this row
     ProbSum = 0.0;
@@ -80,7 +72,7 @@ for angleline, probline, rockingcurveline in zip(AngleData[1:],ProbData[1:],Rock
     for angle,prob,rockingcurve,i in zip(angleline[1:],probline[1:],rockingcurveline[1:],range(len(probline[1:]))):
         if( KeepPlane[i] ): #only print this column if we're keeping this plane            
             if( ProbSum != 0.0 and MaxAngle > float(angle) > MinAngle ):
-                #avoid divide by zero error and also make probability zero if we don't care about the angle
+                #make probability zero if we don't care about the angle
                 Output.write( angle + "\t" + str(float(prob)/ProbSum) + "\t" + rockingcurve + "\t");
             else:
                 Output.write( angle + "\t" + str(0)                   + "\t" + str(0)       + "\t");
@@ -88,4 +80,34 @@ for angleline, probline, rockingcurveline in zip(AngleData[1:],ProbData[1:],Rock
     Output.write( str(ProbSum) + "\n");
     
 Output.close();
+
+
+
+#code to determine diffraction peaks/energy ranges
+#scan along columns. If the plane is being kept then scan in energy to find the range of diffracted energies that are expected to hit the CCD
+for bShouldKeep,PlaneName,index in zip(KeepPlane,AngleData[0][1:],range(len(KeepPlane)) ): #scan across planes
+    if(bShouldKeep):
+        MinEnergy = 1000
+        MaxEnergy = -1
+        for angleline in AngleData[1:]: #scan in energy
+            if (MaxAngle > float(angleline[index+1]) > MinAngle) :
+                if float(angleline[0]) < MinEnergy:
+                    MinEnergy = float(angleline[0])
+                if float(angleline[0]) > MaxEnergy:
+                    MaxEnergy = float(angleline[0])
+        print PlaneName, ":\t", MinEnergy, "--->", MaxEnergy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

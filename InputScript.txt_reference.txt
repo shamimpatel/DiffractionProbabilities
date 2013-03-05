@@ -5,6 +5,8 @@ CCDXMin		0
 CCDXMax		5
 CCDYMin		0
 CCDYMax		2
+CCDXPixelSize	0.05
+CCDYPixelSize	0.05
 SolidAngleTolerance		0.005
 DiffractionData		ProcessedScatteringData.txt
 LatticeConstant		3.31

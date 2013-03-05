@@ -66,6 +66,11 @@ int main ()
 {
     
     ifstream datafile("InputScript.txt");
+    if(datafile.is_open() == false)
+    {
+        cout << "Error: Failed to open InputScript.txt" << endl;
+        exit(1);
+    }
     std::map<std::string,std::string> InputData;
     AddToMapFromFile(datafile, InputData);
     datafile.close();
@@ -105,14 +110,12 @@ int main ()
 
     LatticePlane Plane( b1, b2, b3, 0, 1, 1, &FormFactor, UnitCellVol, &MuData, 12);
 
-    //float Lambda = 3.0f;
-
     ofstream BraggAngleFile;
     BraggAngleFile.open( "BraggAngle.txt" );
     if(BraggAngleFile.is_open() == false)
     {
         cout << "Failed to open BraggAngle.txt" << endl;
-        exit(0);
+        exit(1);
     }
 
     ofstream ScatterProbFile;
@@ -120,7 +123,7 @@ int main ()
     if(ScatterProbFile.is_open() == false)
     {
         cout << "Failed to open ScatterProb.txt" << endl;
-        exit(0);
+        exit(1);
     }
 
     ofstream RockingCurveFile;
@@ -128,7 +131,7 @@ int main ()
     if(RockingCurveFile.is_open() == false)
     {
         cout << "Failed to open RockingCurve.txt" << endl;
-        exit(0);
+        exit(1);
     }
 
     ScatterProbFile << "Energy\t";
@@ -215,9 +218,22 @@ int main ()
     BraggAngleFile << endl;
     RockingCurveFile << endl;
 
-    //for( float Lambda = 1.0f; Lambda <= 5.0f; Lambda += 0.1f)
-    for( float Energy = 3.0f; Energy <= 10.0f; Energy += 0.001f) //0.001f
+    
+    double MinE = 3.0;//4.23;
+    double MaxE = 9.0;//4.28;
+    double DeltaE = 0.0005;//0.0005f;
+    
+    DoubleFromMap("MinEnergy", InputData, MinE);
+    DoubleFromMap("MaxEnergy", InputData, MaxE);
+    DoubleFromMap("DeltaE", InputData, DeltaE);
+    
+    int nEPoints = (MaxE - MinE)/DeltaE;
+
+    //for( float Energy = 3.0f; Energy <= 10.0f; Energy += 0.001f)
+    for( int EnergyTick = 0; EnergyTick < nEPoints; EnergyTick++)
     {
+        double Energy = MinE + DeltaE*EnergyTick;
+
         ScatterProbFile << Energy << "\t";
         BraggAngleFile << Energy << "\t";
         RockingCurveFile << Energy << "\t";
@@ -249,32 +265,8 @@ int main ()
 //          Comput Min/Max Bragg Angles
 ////////////////////////////////////////////////////////////////////////////////
     
-    Vector InputCCDOrigin(110,-1,50); //origin of CCD
-    Vector InputCCDNormal(0,0,1); //direction that CCD points in.
-    double InputCCDAngle = 0;
-    
-    double InputCCDXMin = 0.0;
-    double InputCCDXMax = 5.0;
-    
-    double InputCCDYMin = 0.0;
-    double InputCCDYMax = 2.0;
-    
-    VectorFromMap("CCDOrigin",InputData,InputCCDOrigin);
-    VectorFromMap("CCDNormal",InputData,InputCCDNormal);
-    DoubleFromMap("CCDAngle", InputData,InputCCDAngle);
-    DoubleFromMap("CCDXMin", InputData, InputCCDXMin);
-    DoubleFromMap("CCDYMin", InputData, InputCCDYMin);
-    DoubleFromMap("CCDXMax", InputData, InputCCDXMax);
-    DoubleFromMap("CCDYMax", InputData, InputCCDYMax);
-    
-    cout << "CCDOrigin:\t"; InputCCDOrigin.Print();
-    cout << "CCDNormal:\t"; InputCCDNormal.Print();
-    
-    double XPixelWidth = 0.05, YPixelWidth = 0.05;
-    CCD CCDCamera(InputCCDOrigin, InputCCDNormal, InputCCDAngle,
-                  XPixelWidth, YPixelWidth,
-                  InputCCDXMin, InputCCDXMax,
-                  InputCCDYMin, InputCCDYMax);
+  
+    CCD CCDCamera = GenerateCCDFromInputScript("InputScript.txt");
     
     Vector CCDCorners[4];
     
