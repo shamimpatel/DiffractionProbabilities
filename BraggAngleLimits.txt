@@ -1,2 +1,0 @@
-MinimumBraggAngle:	0.709508
-MaximumBraggAngle:	0.732234
