@@ -108,7 +108,7 @@ int main ()
 
     cout << "UnitCellVol:\t" << UnitCellVol << endl;
 
-    LatticePlane Plane( b1, b2, b3, 0, 1, 1, &FormFactor, UnitCellVol, &MuData, 12);
+    
 
     ofstream BraggAngleFile;
     BraggAngleFile.open( "BraggAngle.txt" );
@@ -328,7 +328,7 @@ int main ()
     double MaxBraggAngle = -1;
     
     //TODO: loop across crystal edges AND CCD edges??
-    //adding in a 2% error should handle that? (now done via input script)
+    //adding in a 2% error should handle that? (tolerance now taken via input script)
     
     for(int iCrystalCorner = 0; iCrystalCorner < 4; iCrystalCorner++)
     {
