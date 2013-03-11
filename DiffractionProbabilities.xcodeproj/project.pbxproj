@@ -36,7 +36,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6C12026C16DF653E00690295 /* DiffractProbMain */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = DiffractProbMain; path = /Users/shamim/Documents/Code/SPEDXSim/DiffractionProbabilities/build/Release/DiffractProbMain; sourceTree = "<absolute>"; };
 		6C12027116DF653E00690295 /* DiffractionProbabilities.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = DiffractionProbabilities.1; sourceTree = "<group>"; };
 		6C12027E16DF73C500690295 /* DiffractProbMain */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = DiffractProbMain; path = "../../../../../Library/Developer/Xcode/DerivedData/SPEDXSim-ftdmncttqlednuahdomyuuuyfebv/Build/Products/Release/DiffractProbMain"; sourceTree = "<group>"; };
 		6C12028016DF744F00690295 /* DiffractionProbMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DiffractionProbMain.cpp; sourceTree = SOURCE_ROOT; };
@@ -48,6 +47,8 @@
 		6C12028816DF779800690295 /* PowderDiffraction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PowderDiffraction.h; path = ../../Include/PowderDiffraction.h; sourceTree = "<group>"; };
 		6C12028916DF779800690295 /* Vector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vector.h; path = ../../Include/Vector.h; sourceTree = "<group>"; };
 		6C12028A16DF779800690295 /* XRay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XRay.h; path = ../../Include/XRay.h; sourceTree = "<group>"; };
+		6CAA26C516E7426B004D257C /* DiffractProbMain */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DiffractProbMain; sourceTree = BUILT_PRODUCTS_DIR; };
+		6CAA26DC16E89BC2004D257C /* SpectrumData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SpectrumData.h; path = ../../Include/SpectrumData.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +67,7 @@
 			children = (
 				6C12028216DF778600690295 /* Headers */,
 				6C12026E16DF653E00690295 /* DiffractionProbabilities */,
+				6CAA26C516E7426B004D257C /* DiffractProbMain */,
 			);
 			sourceTree = "<group>";
 		};
@@ -82,6 +84,7 @@
 		6C12028216DF778600690295 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				6CAA26DC16E89BC2004D257C /* SpectrumData.h */,
 				6C12028316DF779800690295 /* AbsorbCoeffData.h */,
 				6C12028416DF779800690295 /* CCD.h */,
 				6C12028516DF779800690295 /* FileReading.h */,
@@ -112,7 +115,7 @@
 			);
 			name = DiffractProbMain;
 			productName = DiffractionProbabilities;
-			productReference = 6C12026C16DF653E00690295 /* DiffractProbMain */;
+			productReference = 6CAA26C516E7426B004D257C /* DiffractProbMain */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -247,6 +250,7 @@
 				6C12027716DF653E00690295 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
