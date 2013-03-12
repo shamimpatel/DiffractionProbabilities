@@ -81,7 +81,7 @@ for angleline, probline, rockingcurveline in zip(AngleData[1:],ProbData[1:],Rock
     
 Output.close();
 
-
+Output = open("DiffractionPeakLimits.txt" ,'w');
 
 #code to determine diffraction peaks/energy ranges
 #scan along columns. If the plane is being kept then scan in energy to find the range of diffracted energies that are expected to hit the CCD
@@ -96,8 +96,10 @@ for bShouldKeep,PlaneName,index in zip(KeepPlane,AngleData[0][1:],range(len(Keep
                 if float(angleline[0]) > MaxEnergy:
                     MaxEnergy = float(angleline[0])
         print PlaneName, ":\t", MinEnergy, "--->", MaxEnergy
+        Output.write( PlaneName + "\t" + str(MinEnergy) + "\t" + str(MaxEnergy) + "\n" )
 
 
+Output.close();
 
 
 
