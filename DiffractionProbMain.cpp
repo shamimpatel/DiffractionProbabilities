@@ -228,8 +228,15 @@ int main ()
     DoubleFromMap("DeltaE", InputData, DeltaE);
     
     int nEPoints = (MaxE - MinE)/DeltaE;
+    
+    double Temperature  = 300.0; //300K
+    double DebyeTemperature = 240; //240K for Ta
+    double mass_amu = 180.948; //180.948 amu for Ta
+    
+    double DebyeWallerPreFacor = CalculateDebyeWallerPreFactor( Temperature, DebyeTemperature, mass_amu);
+    
+    cout << "DebyeWallerPreFactor:\t" << DebyeWallerPreFacor << endl;
 
-    //for( float Energy = 3.0f; Energy <= 10.0f; Energy += 0.001f)
     for( int EnergyTick = 0; EnergyTick < nEPoints; EnergyTick++)
     {
         double Energy = MinE + DeltaE*EnergyTick;
@@ -243,9 +250,9 @@ int main ()
         for( int i=0; i<int(hklPlanes.size()); i++)
         {
             LatticePlane Plane( b1, b2, b3, hklPlanes[i].h,  hklPlanes[i].k,  hklPlanes[i].l, &FormFactor, UnitCellVol,
-                               &MuData, hklPlanes[i].M);
+                               &MuData, hklPlanes[i].M, DebyeWallerPreFacor);
             BraggAngleFile << Plane.FindBraggReflectionAngle( EnergyToWavelength(Energy) ) << "\t";
-            float I = Plane.CalculatePowderScatter( EnergyToWavelength(Energy) );
+            float I = Plane.CalculatePowderScatter( EnergyToWavelength(Energy) )*Plane.CalculateDebyeWallerFactor(EnergyToWavelength(Energy));
             Sum += I;
             ScatterProbFile << I << "\t";
             RockingCurveFile << Plane.GaussianScherrerWidth(EnergyToWavelength(Energy), 1000) << "\t"; //1000A for grain size (physical?)
