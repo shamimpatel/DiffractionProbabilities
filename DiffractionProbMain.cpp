@@ -318,7 +318,7 @@ int main ()
     Vector CrystalCorners[4];
     
     CrystalCorners[0] = Vector(CrystalOrigin);
-    CrystalCorners[1] = Vector(0,CrystalOrigin.y+CrystalYLength,0);
+    CrystalCorners[1] = Vector(CrystalOrigin.x,CrystalOrigin.y+CrystalYLength,0);
     CrystalCorners[2] = Vector(CrystalOrigin.x+CrystalXLength,CrystalOrigin.y,0);
     CrystalCorners[3] = Vector(CrystalOrigin.x+CrystalXLength,CrystalOrigin.y+CrystalYLength,0);
     
