@@ -64,6 +64,12 @@ bool isSetInList( hklSet Set, std::vector<hklSet> *List)
 
 int main ()
 {
+    cout << endl;
+    cout << "//////////////////////////////////////////////////////" << endl;
+    cout << "//Now running Diffraction Probabiities Pre-Processor//" << endl;
+    cout << "//////////////////////////////////////////////////////" << endl;
+    cout << endl;
+        
     
     ifstream datafile("InputScript.txt");
     if(datafile.is_open() == false)
@@ -78,19 +84,37 @@ int main ()
 //          Generate Diffraction Probabilities
 ////////////////////////////////////////////////////////////////////////////////
     
-    FormFactorData FormFactor( 0.0f, 2.0f, 10000);
+    
+    double MinE = 3.0;//4.23;
+    double MaxE = 9.0;//4.28;
+    double DeltaE = 0.0005;//0.0005f;
+    
+    DoubleFromMap("MinEnergy", InputData, MinE);
+    DoubleFromMap("MaxEnergy", InputData, MaxE);
+    DoubleFromMap("DeltaE", InputData, DeltaE);
+    
+    int nEPoints = (MaxE - MinE)/DeltaE;    
+    
+    
     std::string FormFacFilename;
     StringFromMap("FormFactorData", InputData, FormFacFilename);
-    //FormFactor.LoadData("TaFormFactor.txt");
-    FormFactor.LoadData(FormFacFilename.c_str());
-
-    AbsorbCoeffData MuData( 1.0f, 15.0f, 2000);
+    double MaxFormFactor = 1.0/EnergyToWavelength(MaxE);
+    MaxFormFactor += MaxFormFactor*0.02; // Add a 2% tolerance just to cover numerical errors.
+    FormFactorData FormFactor( 0.0, MaxFormFactor, 1, 10000, FormFacFilename.c_str());
+    
+    
     std::string MuDataFilename;
     StringFromMap("AbsorptionData", InputData, MuDataFilename);
-    //MuData.LoadData("TaAbsorbCoeff.txt");
-    MuData.LoadData(MuDataFilename.c_str());
-
-    float a0 = 3.31f; //lattice constant 2.87 angstroms (iron) 3.31 (Ta)
+    
+    double MinWavelength = EnergyToWavelength(MaxE); MinWavelength -= MinWavelength*0.02;
+    double MaxWavelength = EnergyToWavelength(MinE); MaxWavelength += MaxWavelength*0.02;
+    
+    AbsorbCoeffData MuData( MinWavelength, MaxWavelength, 1, 5000, MuDataFilename.c_str());
+  
+    
+    double a0 = 3.31; //lattice constant 2.87 angstroms (iron) 3.31 (Ta)
+    DoubleFromMap("LatticeConstant", InputData, a0);
+    
 
     Vector a1(1,0,0);
     Vector a2(0,1,0);
@@ -219,18 +243,10 @@ int main ()
     RockingCurveFile << endl;
 
     
-    double MinE = 3.0;//4.23;
-    double MaxE = 9.0;//4.28;
-    double DeltaE = 0.0005;//0.0005f;
-    
-    DoubleFromMap("MinEnergy", InputData, MinE);
-    DoubleFromMap("MaxEnergy", InputData, MaxE);
-    DoubleFromMap("DeltaE", InputData, DeltaE);
-    
-    int nEPoints = (MaxE - MinE)/DeltaE;
+
     
     double Temperature  = 300.0; //300K
-    double DebyeTemperature = 240; //240K for Ta
+    double DebyeTemperature = 240.0; //240K for Ta
     double mass_amu = 180.948; //180.948 amu for Ta
     
     double DebyeWallerPreFacor = CalculateDebyeWallerPreFactor( Temperature, DebyeTemperature, mass_amu);
@@ -312,50 +328,81 @@ int main ()
     DoubleFromMap("CrystalXLength", InputData, CrystalXLength);
     DoubleFromMap("CrystalYLength", InputData, CrystalYLength);
     
-    cout << "CrystalOrigin:\t"; CrystalOrigin.Print();
-    cout << "CrystalDimensions:\tX:\t" << CrystalXLength << "\tY:\t" << CrystalYLength << endl;
     
-    Vector CrystalCorners[4];
+    double SourceDivergence = 0.0;
+    DoubleFromMap("SourceDivergence", InputData, SourceDivergence);
     
-    CrystalCorners[0] = Vector(CrystalOrigin);
-    CrystalCorners[1] = Vector(CrystalOrigin.x,CrystalOrigin.y+CrystalYLength,0);
-    CrystalCorners[2] = Vector(CrystalOrigin.x+CrystalXLength,CrystalOrigin.y,0);
-    CrystalCorners[3] = Vector(CrystalOrigin.x+CrystalXLength,CrystalOrigin.y+CrystalYLength,0);
     
-    cout << "Crystal Corners:" << endl;
-    for(int i = 0; i<4; i++)
+    float MinTheta = 0.0;
+    float MaxTheta  = Deg2Rad( +SourceDivergence );
+    float MinPhi = 0.0;
+    float MaxPhi  = 2.0*PI;
+    
+    float MinCosTheta = cos( MinTheta );
+    float MaxCosTheta = cos( MaxTheta );
+    
+    if (MinCosTheta > MaxCosTheta)
     {
-        CrystalCorners[i].Print();
+        swap( MinCosTheta, MaxCosTheta);
     }
+    
+    if (MinPhi > MaxPhi)
+    {
+        swap( MinPhi, MaxPhi);
+    }
+    
+    
+    int NumThetaSteps = 1;
+    int NumPhiSteps = 1;
+    IntFromMap( "NumThetaSteps", InputData, NumThetaSteps);
+    IntFromMap( "NumPhiSteps", InputData, NumPhiSteps);
+    
+    double deltaCosTheta = (MaxCosTheta-MinCosTheta)/double(NumThetaSteps);
+    double deltaPhi = (MaxPhi-MinPhi)/double(NumPhiSteps);
+  
     
     Vector Source( -3.0f, 0.0f, 5.0);    
     VectorFromMap("Source", InputData, Source);
     
     double MinBraggAngle = 10;
     double MaxBraggAngle = -1;
+
     
-    //TODO: loop across crystal edges AND CCD edges??
-    //adding in a 2% error should handle that? (tolerance now taken via input script)
-    
-    for(int iCrystalCorner = 0; iCrystalCorner < 4; iCrystalCorner++)
+    Vector SourceToOrigin = -1.0*Source;
+        
+    for( int CosThetaStep = 0; CosThetaStep <= NumThetaSteps; CosThetaStep ++)
     {
-        Vector SourceToCrystal = CrystalCorners[iCrystalCorner] - Source;
-        SourceToCrystal = SourceToCrystal.Normalized();
-        for(int iCCDCorner = 0; iCCDCorner < 4; iCCDCorner ++)
+        double CosTheta = MinCosTheta + double(CosThetaStep)*deltaCosTheta;
+                
+        for( int PhiStep = 0; PhiStep <= NumPhiSteps; PhiStep ++)
         {
-            Vector CrystalToCCD = CCDCorners[iCCDCorner] - CrystalCorners[iCrystalCorner];
-            CrystalToCCD = CrystalToCCD.Normalized();
-            double BraggAngle = 0.5*acos( CrystalToCCD.Dot(SourceToCrystal));//0.5 as the calculation gives scattering angle;
-            if( BraggAngle < MinBraggAngle )
+            double Phi = MinPhi + double(PhiStep)*deltaPhi;
+                                    
+            Vector SourceToCrystal( acos(CosTheta), Phi, true, true);
+            SourceToCrystal = TransformToNewFrame(SourceToCrystal, SourceToOrigin.GetTheta(), SourceToOrigin.GetPhi());
+            SourceToCrystal = SourceToCrystal.Normalized();            
+            
+            Vector CrystalIntersection(Source.x - (Source.z/SourceToCrystal.z)*SourceToCrystal.x,
+                                       Source.y - (Source.z/SourceToCrystal.z)*SourceToCrystal.y,
+                                       0.0f); //intersection of ray with z=0 plane
+            
+            for(int iCCDCorner = 0; iCCDCorner < 4; iCCDCorner ++)
             {
-                MinBraggAngle = BraggAngle;
-            }
-            if( BraggAngle > MaxBraggAngle )
-            {
-                MaxBraggAngle = BraggAngle;
-            }
+                Vector CrystalToCCD = CCDCorners[iCCDCorner] - CrystalIntersection;
+                CrystalToCCD = CrystalToCCD.Normalized();
+                double BraggAngle = 0.5*acos( CrystalToCCD.Dot(SourceToCrystal) );//0.5 as the calculation gives scattering angle;
+                if( BraggAngle < MinBraggAngle )
+                {
+                    MinBraggAngle = BraggAngle;
+                }
+                if( BraggAngle > MaxBraggAngle )
+                {
+                    MaxBraggAngle = BraggAngle;
+                }
+            }            
         }
     }
+    
     
     if(MinBraggAngle > 0.5*PI || MinBraggAngle < 0.0||
        MaxBraggAngle > 0.5*PI || MaxBraggAngle < 0.0)
@@ -373,7 +420,7 @@ int main ()
     MinBraggAngle -= MinBraggAngle*BraggAngleTolerance;
     MaxBraggAngle += MaxBraggAngle*BraggAngleTolerance;
     
-    cout << "MinAngle:\t" << MinBraggAngle << "\tMaxAngle:\t" << MaxBraggAngle << endl;
+    cout << "MinAngle:\t" << Rad2Deg(MinBraggAngle) << "\tMaxAngle:\t" << Rad2Deg(MaxBraggAngle) << "\t(Degrees)" << endl;
     
     ofstream BraggAngleLimitsFile;
     BraggAngleLimitsFile.open( "BraggAngleLimits.txt" );
@@ -383,6 +430,13 @@ int main ()
     BraggAngleLimitsFile << "MaximumBraggAngle:\t" << MaxBraggAngle << endl;
     
     BraggAngleLimitsFile.close();
+    
+    cout << endl;
+    cout << "///////////////////////////////////////////////////////////" << endl;
+    cout << "//Finished running Diffraction Probabiities Pre-Processor//" << endl;
+    cout << "///////////////////////////////////////////////////////////" << endl;
+    cout << endl;
+    
     
     return 0;
 

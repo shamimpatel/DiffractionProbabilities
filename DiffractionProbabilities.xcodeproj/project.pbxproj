@@ -48,8 +48,8 @@
 		6C12028916DF779800690295 /* Vector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vector.h; path = ../../Include/Vector.h; sourceTree = "<group>"; };
 		6C12028A16DF779800690295 /* XRay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XRay.h; path = ../../Include/XRay.h; sourceTree = "<group>"; };
 		6CAA26C516E7426B004D257C /* DiffractProbMain */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DiffractProbMain; sourceTree = BUILT_PRODUCTS_DIR; };
-		6CAA26DC16E89BC2004D257C /* SpectrumData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SpectrumData.h; path = ../../Include/SpectrumData.h; sourceTree = "<group>"; };
 		6CC6480616F0A39800759563 /* Integration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Integration.h; path = /Users/shamim/Documents/Code/SPEDXSim/TestCode/TestCode/../../../Include/Integration.h; sourceTree = "<absolute>"; };
+		6CC6A2A71700BBD700F9D7D8 /* DataLoader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DataLoader.h; path = /Users/shamim/Documents/Code/SPEDXSim/TestCode/TestCode/../../../Include/DataLoader.h; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,8 +85,8 @@
 		6C12028216DF778600690295 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				6CC6A2A71700BBD700F9D7D8 /* DataLoader.h */,
 				6CC6480616F0A39800759563 /* Integration.h */,
-				6CAA26DC16E89BC2004D257C /* SpectrumData.h */,
 				6C12028316DF779800690295 /* AbsorbCoeffData.h */,
 				6C12028416DF779800690295 /* CCD.h */,
 				6C12028516DF779800690295 /* FileReading.h */,

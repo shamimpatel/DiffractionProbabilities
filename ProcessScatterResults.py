@@ -3,6 +3,12 @@ Processes the data from DiffractionProb.
 
 
 '''
+
+print "//////////////////////////////"
+print "//Processing Scattering Data//"
+print "//////////////////////////////"
+
+
 #0.610865238; #35 degrees
 #0.785398163; #45 degrees
 #0.34906585; #20 degrees
@@ -66,8 +72,8 @@ for angleline, probline, rockingcurveline in zip(AngleData[1:],ProbData[1:],Rock
     Output.write(angleline[0] + "\t"); #print energy for this row
     ProbSum = 0.0;
     for prob,angle in zip(probline[1:],angleline[1:]):
-        if MaxAngle > float(angle) > MinAngle: #Only include reflections that we care about
-            ProbSum += float(prob); #sum up all probabilities across row
+        #if MaxAngle > float(angle) > MinAngle: #Only include reflections that we care about
+        ProbSum += float(prob); #sum up all probabilities across row
             
     for angle,prob,rockingcurve,i in zip(angleline[1:],probline[1:],rockingcurveline[1:],range(len(probline[1:]))):
         if( KeepPlane[i] ): #only print this column if we're keeping this plane            
@@ -101,7 +107,9 @@ for bShouldKeep,PlaneName,index in zip(KeepPlane,AngleData[0][1:],range(len(Keep
 
 Output.close();
 
-
+print "///////////////////////////////////////"
+print "//Finished Processing Scattering Data//"
+print "///////////////////////////////////////\n"
 
 
 
