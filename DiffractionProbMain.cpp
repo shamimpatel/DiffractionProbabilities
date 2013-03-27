@@ -241,9 +241,6 @@ int main ()
     ScatterProbFile << endl;
     BraggAngleFile << endl;
     RockingCurveFile << endl;
-
-    
-
     
     double Temperature  = 300.0; //300K
     double DebyeTemperature = 240.0; //240K for Ta
@@ -253,7 +250,7 @@ int main ()
     
     cout << "DebyeWallerPreFactor:\t" << DebyeWallerPreFacor << endl;
 
-    for( int EnergyTick = 0; EnergyTick < nEPoints; EnergyTick++)
+    for( int EnergyTick = 0; EnergyTick <= nEPoints; EnergyTick++)
     {
         double Energy = MinE + DeltaE*EnergyTick;
 
