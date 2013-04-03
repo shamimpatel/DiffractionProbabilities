@@ -29,6 +29,6 @@ FlipXAxis	0
 FlipYAxis	0
 SpectrumData	SourceSpectrum.txt
 FilterThickness		0.0
-SourceDivergence	2.862
-NumThetaSteps	200
-NumPhiSteps	200
+SourceDivergence	0.1
+NumThetaSteps	800
+NumPhiSteps	400
