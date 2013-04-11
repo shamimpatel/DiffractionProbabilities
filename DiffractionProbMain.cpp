@@ -27,34 +27,20 @@ bool ApproxEqual( float a, float b, float tolerance)
     return fabs( a - b ) <= tolerance;
 }
 
-struct hklSet
-{
-    int h,k,l;
-    int M; //Multiplicity (convenient to just have it here)
-    hklSet( int h, int k, int l, int M)
-    {
-        this->h = h;
-        this->k = k;
-        this->l = l;
-        this->M = M;
-    }
-};
-
-
 //this is terrible programming practice....
 const int _G_ISBCC = 0; //set to zero for BCC, 1 for FCC
 
-bool isSetInList( hklSet Set, std::vector<hklSet> *List)
+bool isPlaneInList( LatticePlane Plane, std::vector<LatticePlane> *List)
 {
     for( int i=0; i < int(List->size()); i++ )
     {
-        if( Set.h == ((*List)[i]).h && Set.k == ((*List)[i]).k && Set.l == ((*List)[i]).l)
+        if( Plane.h == ((*List)[i]).h && Plane.k == ((*List)[i]).k && Plane.l == ((*List)[i]).l)
         {
             return true;
         }
     }
 
-    if( (Set.h + Set.k + Set.l)%2 != _G_ISBCC) //if not BCC/FCC, say it's in the list (though it isn't)
+    if( (Plane.h + Plane.k + Plane.l)%2 != _G_ISBCC) //if not BCC/FCC, say it's in the list (though it isn't)
     {
         return true;
     }
@@ -96,11 +82,11 @@ int main ()
     int nEPoints = (MaxE - MinE)/DeltaE;    
     
     
-    std::string FormFacFilename;
+    /*std::string FormFacFilename;
     StringFromMap("FormFactorData", InputData, FormFacFilename);
     double MaxFormFactor = 1.0/EnergyToWavelength(MaxE);
     MaxFormFactor += MaxFormFactor*0.02; // Add a 2% tolerance just to cover numerical errors.
-    FormFactorData FormFactor( 0.0, MaxFormFactor, 1, 10000, FormFacFilename.c_str());
+    FormFactorData FormFactor( 0.0, MaxFormFactor, 1, 10000, FormFacFilename.c_str());*/
     
     
     std::string MuDataFilename;
@@ -114,7 +100,6 @@ int main ()
     
     double a0 = 3.31; //lattice constant 2.87 angstroms (iron) 3.31 (Ta)
     DoubleFromMap("LatticeConstant", InputData, a0);
-    
 
     Vector a1(1,0,0);
     Vector a2(0,1,0);
@@ -124,15 +109,11 @@ int main ()
     a2 = a2*a0;
     a3 = a3*a0;
 
-    float UnitCellVol = a2.Cross(a3).Dot(a1);
-
-    Vector b1 = (a2.Cross(a3))/UnitCellVol;
-    Vector b2 = (a3.Cross(a1))/UnitCellVol;
-    Vector b3 = (a1.Cross(a2))/UnitCellVol;
-
-    cout << "UnitCellVol:\t" << UnitCellVol << endl;
-
-    
+	
+	std::string UnitCellFileName;
+	StringFromMap("UnitCell", InputData, UnitCellFileName);
+	LatticePlane::SetupUnitCell(UnitCellFileName.c_str(), a1, a2, a3, a0, MinE, MaxE, &MuData);
+	
 
     ofstream BraggAngleFile;
     BraggAngleFile.open( "BraggAngle.txt" );
@@ -164,32 +145,33 @@ int main ()
 
     int indexMax = 5;
 
-    std::vector< hklSet > hklPlanes;
+    //std::vector< hklSet > hklPlanes;
+	std::vector< LatticePlane > hklPlanes;
 
-    hklSet S(0,0,0,0);
+    LatticePlane S(0,0,0,0);
 
     for( int n1 = 0; n1 <= indexMax; n1++)
     {
         if(n1 != 0)
         {
-            S = hklSet(0 ,0 ,n1, 6);
-            if( !isSetInList(S, &hklPlanes) )
+            S = LatticePlane(0 ,0 ,n1, 6);
+            if( !isPlaneInList(S, &hklPlanes) )
             {
                 hklPlanes.push_back(S);
                 ScatterProbFile << 0  << 0  << n1 << "\t";
                 BraggAngleFile << 0  << 0  << n1 << "\t";
                 RockingCurveFile << 0  << 0  << n1 << "\t";
             }
-            S = hklSet(0 ,n1,n1,12);
-            if( !isSetInList(S, &hklPlanes) )
+            S = LatticePlane(0 ,n1,n1,12);
+            if( !isPlaneInList(S, &hklPlanes) )
             {
                 hklPlanes.push_back(S);
                 ScatterProbFile << 0  << n1 << n1 << "\t";
                 BraggAngleFile << 0  << n1 << n1 << "\t";
                 RockingCurveFile << 0  << n1 << n1 << "\t";
             }
-            S = hklSet(n1,n1,n1, 8);
-            if( !isSetInList(S, &hklPlanes) )
+            S = LatticePlane(n1,n1,n1, 8);
+            if( !isPlaneInList(S, &hklPlanes) )
             {
                 hklPlanes.push_back(S);
                 ScatterProbFile << n1 << n1 << n1 << "\t";
@@ -202,16 +184,16 @@ int main ()
         {
             if( n1 != 0 && n2 !=0)
             {
-                S = hklSet(0 ,n1,n2,24);
-                if( !isSetInList(S, &hklPlanes) )
+                S = LatticePlane(0 ,n1,n2,24);
+                if( !isPlaneInList(S, &hklPlanes) )
                 {
                     hklPlanes.push_back(S);
                     ScatterProbFile << 0  << n1 << n2 << "\t";
                     BraggAngleFile << 0  << n1 << n2 << "\t";
                     RockingCurveFile << 0  << n1 << n2 << "\t";
                 }
-                S = hklSet(n1,n1,n2,24);
-                if( !isSetInList(S, &hklPlanes) )
+                S = LatticePlane(n1,n1,n2,24);
+                if( !isPlaneInList(S, &hklPlanes) )
                 {
                     hklPlanes.push_back(S);
                     ScatterProbFile << n1 << n1 << n2 << "\t";
@@ -224,8 +206,8 @@ int main ()
             {
                 if( n1 != 0 && n2 !=0 && n3 != 0)
                 {
-                    S = hklSet(n1,n2,n3,48);
-                    if( !isSetInList(S, &hklPlanes) )
+                    S = LatticePlane(n1,n2,n3,48);
+                    if( !isPlaneInList(S, &hklPlanes) )
                     {
                         hklPlanes.push_back(S);
                         ScatterProbFile << n1 << n2 << n3 << "\t";
@@ -237,7 +219,6 @@ int main ()
         }
     }
 
-    //ScatterProbFile << "Sum_" << indexMax << endl;
     ScatterProbFile << endl;
     BraggAngleFile << endl;
     RockingCurveFile << endl;
@@ -245,11 +226,17 @@ int main ()
     double Temperature  = 300.0; //300K
     double DebyeTemperature = 240.0; //240K for Ta
     double mass_amu = 180.948; //180.948 amu for Ta
+	
+	DoubleFromMap("Temperature", InputData, Temperature);
+	DoubleFromMap("DebyeTemperature", InputData, DebyeTemperature);
+	DoubleFromMap("AtomicMass", InputData, mass_amu);
+	
     
-    double DebyeWallerPreFacor = CalculateDebyeWallerPreFactor( Temperature, DebyeTemperature, mass_amu);
-    
-    cout << "DebyeWallerPreFactor:\t" << DebyeWallerPreFacor << endl;
-
+    double DebyeWallerPreFactor = LatticePlane::CalculateDebyeWallerPreFactor( Temperature, DebyeTemperature, mass_amu);
+    cout << "DebyeWallerPreFactor:\t" << DebyeWallerPreFactor << endl;
+	LatticePlane::SetDebyeWallerPreFactor( DebyeWallerPreFactor );
+	
+		
     for( int EnergyTick = 0; EnergyTick <= nEPoints; EnergyTick++)
     {
         double Energy = MinE + DeltaE*EnergyTick;
@@ -258,15 +245,15 @@ int main ()
         BraggAngleFile << Energy << "\t";
         RockingCurveFile << Energy << "\t";
 
-        float Sum = 0.0f;
+        //float Sum = 0.0f;
 
         for( int i=0; i<int(hklPlanes.size()); i++)
         {
-            LatticePlane Plane( b1, b2, b3, hklPlanes[i].h,  hklPlanes[i].k,  hklPlanes[i].l, &FormFactor, UnitCellVol,
-                               &MuData, hklPlanes[i].M, DebyeWallerPreFacor);
+            //LatticePlane Plane( hklPlanes[i].h,  hklPlanes[i].k,  hklPlanes[i].l, hklPlanes[i].M);
+			LatticePlane Plane = hklPlanes[i];
             BraggAngleFile << Plane.FindBraggReflectionAngle( EnergyToWavelength(Energy) ) << "\t";
-            float I = Plane.CalculatePowderScatter( EnergyToWavelength(Energy) )*Plane.CalculateDebyeWallerFactor(EnergyToWavelength(Energy));
-            Sum += I;
+            float I = Plane.CalculatePowderScatter( EnergyToWavelength(Energy) );
+            //Sum += I;
             ScatterProbFile << I << "\t";
             RockingCurveFile << Plane.GaussianScherrerWidth(EnergyToWavelength(Energy), 1000) << "\t"; //1000A for grain size (physical?)
         }
