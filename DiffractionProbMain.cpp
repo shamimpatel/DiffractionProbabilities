@@ -66,6 +66,9 @@ int main ()
     std::map<std::string,std::string> InputData;
     AddToMapFromFile(datafile, InputData);
     datafile.close();
+	
+	
+	
 ////////////////////////////////////////////////////////////////////////////////
 //          Generate Diffraction Probabilities
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,12 +93,12 @@ int main ()
     
     
     std::string MuDataFilename;
-    StringFromMap("AbsorptionData", InputData, MuDataFilename);
+    StringFromMap("AbsorptionData_Energy", InputData, MuDataFilename);
     
-    double MinWavelength = EnergyToWavelength(MaxE); MinWavelength -= MinWavelength*0.02;
-    double MaxWavelength = EnergyToWavelength(MinE); MaxWavelength += MaxWavelength*0.02;
+    //double MinWavelength = EnergyToWavelength(MaxE); MinWavelength -= MinWavelength*0.02;
+    //double MaxWavelength = EnergyToWavelength(MinE); MaxWavelength += MaxWavelength*0.02;
     
-    AbsorbCoeffData MuData( MinWavelength, MaxWavelength, 1, 5000, MuDataFilename.c_str());
+    AbsorbCoeffDataEnergy MuData( MinE, MaxE, 5000, MuDataFilename.c_str());
   
     
     double a0 = 3.31; //lattice constant 2.87 angstroms (iron) 3.31 (Ta)
@@ -143,7 +146,7 @@ int main ()
     BraggAngleFile  << "Energy\t";
     RockingCurveFile << "Energy\t";
 
-    int indexMax = 5;
+    int indexMax = 10;
 
     //std::vector< hklSet > hklPlanes;
 	std::vector< LatticePlane > hklPlanes;
@@ -304,13 +307,13 @@ int main ()
         
     }
     
-    Vector CrystalOrigin(0,-0.1,0);
+   /* Vector CrystalOrigin(0,-0.1,0);
     double CrystalXLength = 0.1;
     double CrystalYLength = 0.2;
     
     VectorFromMap("CrystalOrigin",InputData, CrystalOrigin);
     DoubleFromMap("CrystalXLength", InputData, CrystalXLength);
-    DoubleFromMap("CrystalYLength", InputData, CrystalYLength);
+    DoubleFromMap("CrystalYLength", InputData, CrystalYLength);*/
     
     
     double SourceDivergence = 0.0;
